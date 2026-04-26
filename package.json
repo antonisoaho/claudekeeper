@@ -1,0 +1,51 @@
+{
+  "name": "@antonisoaho/claudekeeper",
+  "version": "1.1.0",
+  "description": "Session management and token optimization for Claude Code",
+  "type": "module",
+  "bin": {
+    "claudekeeper": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "postinstall": "node ./dist/postinstall.js || true"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "token",
+    "cache",
+    "optimization",
+    "cli"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antonisoaho/claudekeeper.git"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "commander": "^13.1.0",
+    "cosmiconfig": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
+  }
+}

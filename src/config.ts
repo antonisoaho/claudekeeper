@@ -1,0 +1,96 @@
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { homedir } from 'node:os'
+
+const CONFIG_DIR = resolve(homedir(), '.claudekeeper')
+const CONFIG_FILE = resolve(CONFIG_DIR, 'config.json')
+
+export interface ProjectHubConfig {
+  apiKey: string
+  url: string
+  developerHash: string
+  teamName?: string
+  projectId?: string     // Hub project UUID — set during login project picker
+  projectName?: string   // Friendly project name
+  projectHash?: string   // Hub project hash — used in API calls
+}
+
+export interface ClaudekeeperUserConfig {
+  rotation: {
+    enabled: boolean
+    threshold: number
+    minTurns: number
+  }
+  notifications: {
+    desktop: boolean
+  }
+  /** Per-project hub config, keyed by normalized git remote URL */
+  projects?: Record<string, ProjectHubConfig>
+}
+
+const DEFAULTS: ClaudekeeperUserConfig = {
+  rotation: {
+    enabled: true,
+    threshold: 100_000,
+    minTurns: 30,
+  },
+  notifications: {
+    desktop: true,
+  },
+}
+
+/**
+ * Read config synchronously — safe for hooks (separate processes).
+ * Falls back to defaults if file doesn't exist.
+ */
+export function readConfig(): ClaudekeeperUserConfig {
+  try {
+    const raw = JSON.parse(readFileSync(CONFIG_FILE, 'utf-8'))
+    return {
+      rotation: { ...DEFAULTS.rotation, ...raw.rotation },
+      notifications: { ...DEFAULTS.notifications, ...raw.notifications },
+      projects: raw.projects ? { ...raw.projects } : undefined,
+    }
+  } catch {
+    return { ...DEFAULTS }
+  }
+}
+
+/**
+ * Get hub config for a specific project (by normalized git remote URL).
+ */
+export function getProjectHubConfig(gitRemoteUrl: string): ProjectHubConfig | null {
+  const config = readConfig()
+  return config.projects?.[gitRemoteUrl] ?? null
+}
+
+/**
+ * Save hub config for a specific project.
+ */
+export function setProjectHubConfig(gitRemoteUrl: string, hubConfig: ProjectHubConfig): void {
+  const config = readConfig()
+  if (!config.projects) config.projects = {}
+  config.projects[gitRemoteUrl] = hubConfig
+  writeConfig(config)
+}
+
+/**
+ * Write the full config to disk.
+ */
+export function writeConfig(config: ClaudekeeperUserConfig): void {
+  mkdirSync(CONFIG_DIR, { recursive: true })
+  writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2) + '\n')
+}
+
+/**
+ * Write config. Only writes if file doesn't exist (preserves user edits).
+ */
+export function writeConfigIfMissing(): void {
+  try {
+    readFileSync(CONFIG_FILE)
+    // File exists — don't overwrite
+  } catch {
+    mkdirSync(CONFIG_DIR, { recursive: true })
+    writeFileSync(CONFIG_FILE, JSON.stringify(DEFAULTS, null, 2) + '\n')
+  }
+}
