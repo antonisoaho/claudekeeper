@@ -153,7 +153,11 @@ program
 
     // Spawn fresh claude — SessionStart hook will inject the handoff automatically
     const { spawn } = await import('node:child_process')
-    const child = spawn('claude', [], { stdio: 'inherit', shell: process.platform === 'win32' })
+    const child = spawn('claude', [], {
+      stdio: 'inherit',
+      shell: process.platform === 'win32',
+      env: { ...process.env, CLAUDEKEEPER_ACTIVE: '1' },
+    })
     child.on('exit', (code) => process.exit(code ?? 0))
   })
 

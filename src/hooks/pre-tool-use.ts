@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import type { PreToolUseHookInput, HookDecision } from '../types.js'
-import { readStdin, outputDecision } from './shared.js'
+import { readStdin, outputDecision, bailIfNotClaudekeeperLaunched } from './shared.js'
 import { findKnownError } from '../features/error-index.js'
 
 // Rate limit: only inject once per unique base command per session.
@@ -69,6 +69,7 @@ export function clearOutcomePending(): void {
  * as additional context. Non-blocking — Claude decides whether to use it.
  */
 export async function handlePreToolUseHook(): Promise<void> {
+  if (bailIfNotClaudekeeperLaunched()) return
   let hookInput: PreToolUseHookInput
   try {
     const input = await readStdin()

@@ -5,7 +5,7 @@ import { loadCalibration } from '../features/calibration.js'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { logActivity } from '../features/activity-log.js'
-import { readStdin, readJsonFile, writeJsonFileAtomic, findTranscriptPathSync } from './shared.js'
+import { readStdin, readJsonFile, writeJsonFileAtomic, findTranscriptPathSync, bailIfNotClaudekeeperLaunched } from './shared.js'
 
 /**
  * UserPromptSubmit hook — fires BEFORE Claude processes the user's prompt.
@@ -30,6 +30,7 @@ interface UserPromptSubmitInput {
 const BLOCK_NUDGE_FILE = resolve(homedir(), '.claudekeeper', 'prompt-block-nudge.json')
 
 export async function handleUserPromptSubmitHook(): Promise<void> {
+  if (bailIfNotClaudekeeperLaunched()) return
   const input = await readStdin()
   let hookInput: UserPromptSubmitInput
 

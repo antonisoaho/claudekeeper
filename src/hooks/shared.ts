@@ -5,6 +5,25 @@ import { randomBytes } from 'node:crypto'
 import type { HookDecision } from '../types.js'
 
 /**
+ * Hooks are installed globally in ~/.claude/settings.json, but should only
+ * affect sessions launched via `claudekeeper run` / `claudekeeper continue`.
+ * Those wrappers set CLAUDEKEEPER_ACTIVE=1; bare `claude` invocations don't.
+ */
+export function isClaudekeeperActive(): boolean {
+  return process.env.CLAUDEKEEPER_ACTIVE === '1'
+}
+
+/**
+ * If the current claude process wasn't launched by claudekeeper, emit an
+ * empty decision and return true so the caller can bail out.
+ */
+export function bailIfNotClaudekeeperLaunched(): boolean {
+  if (isClaudekeeperActive()) return false
+  process.stdout.write('{}')
+  return true
+}
+
+/**
  * Read JSON from stdin — used by all hooks.
  */
 export function readStdin(): Promise<string> {

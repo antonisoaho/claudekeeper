@@ -15,7 +15,7 @@ import { logActivity } from '../features/activity-log.js'
 import { saveSessionState, extractSessionStateFromTranscript, findTranscriptPathSync as findTranscriptSync } from '../features/session-state.js'
 import { readConfig } from '../config.js'
 import { loadCalibration } from '../features/calibration.js'
-import { readStdin, outputDecision, writeJsonFileAtomic, readJsonFile } from './shared.js'
+import { readStdin, outputDecision, writeJsonFileAtomic, readJsonFile, bailIfNotClaudekeeperLaunched } from './shared.js'
 
 /**
  * PostToolUse hook handler.
@@ -29,6 +29,7 @@ import { readStdin, outputDecision, writeJsonFileAtomic, readJsonFile } from './
  * (inside Claude Code) instead of requiring a separate dashboard.
  */
 export async function handlePostToolUseHook(): Promise<void> {
+  if (bailIfNotClaudekeeperLaunched()) return
   let hookInput: PostToolUseHookInput
   try {
     const input = await readStdin()

@@ -3,7 +3,7 @@ import type { StopHookInput, HookDecision, SessionRecord, AssistantRecord } from
 import { createHash } from 'node:crypto'
 import { logActivity } from '../features/activity-log.js'
 import { savePostCompactSummary } from '../features/session-state.js'
-import { readStdin, outputDecision } from './shared.js'
+import { readStdin, outputDecision, bailIfNotClaudekeeperLaunched } from './shared.js'
 
 /**
  * Stop hook handler — detects compaction loops and blocks further execution.
@@ -16,6 +16,7 @@ import { readStdin, outputDecision } from './shared.js'
  * the session to prevent token waste.
  */
 export async function handleStopHook(): Promise<void> {
+  if (bailIfNotClaudekeeperLaunched()) return
   let hookInput: StopHookInput
   try {
     const input = await readStdin()

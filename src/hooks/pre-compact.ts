@@ -1,6 +1,6 @@
 import { logActivity } from '../features/activity-log.js'
 import { saveSessionState, extractSessionStateFromTranscript } from '../features/session-state.js'
-import { readStdin, outputDecision, findTranscriptPathSync } from './shared.js'
+import { readStdin, outputDecision, findTranscriptPathSync, bailIfNotClaudekeeperLaunched } from './shared.js'
 
 /**
  * PreCompact hook — fires right before Claude Code compacts the context.
@@ -11,6 +11,7 @@ import { readStdin, outputDecision, findTranscriptPathSync } from './shared.js'
  * - The SessionStart hook injects this into the next session
  */
 export async function handlePreCompactHook(): Promise<void> {
+  if (bailIfNotClaudekeeperLaunched()) return
   const input = await readStdin()
   let hookInput: { session_id: string; transcript_path?: string }
 

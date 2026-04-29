@@ -6,7 +6,7 @@ import { parseJsonlFile, extractTurns, extractModel } from '../daemon/parser.js'
 import { detectCacheDegradation } from '../features/cache-health.js'
 import { hasResumeBoundary, detectResumeAnomaly } from '../features/resume-detector.js'
 import { logActivity } from '../features/activity-log.js'
-import { readStdin, outputDecision, pruneStaleStateFiles } from './shared.js'
+import { readStdin, outputDecision, pruneStaleStateFiles, bailIfNotClaudekeeperLaunched } from './shared.js'
 
 /**
  * SessionStart hook handler.
@@ -20,6 +20,7 @@ import { readStdin, outputDecision, pruneStaleStateFiles } from './shared.js'
  * This is infrastructure, not information — Claude acts on it automatically.
  */
 export async function handleSessionStartHook(): Promise<void> {
+  if (bailIfNotClaudekeeperLaunched()) return
   const input = await readStdin()
   let hookInput: { session_id: string; cwd?: string }
   try {

@@ -128,6 +128,7 @@ function spawnClaude(args: string[]): Promise<{ code: number | null; signal: str
       stdio: 'inherit',
       detached: false,
       shell: process.platform === 'win32',
+      env: { ...process.env, CLAUDEKEEPER_ACTIVE: '1' },
     })
 
     child.on('error', (err) => {

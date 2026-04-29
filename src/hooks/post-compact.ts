@@ -1,6 +1,6 @@
 import { logActivity } from '../features/activity-log.js'
 import { savePostCompactSummary, parseStructuredHandoff } from '../features/session-state.js'
-import { readStdin, outputDecision } from './shared.js'
+import { readStdin, outputDecision, bailIfNotClaudekeeperLaunched } from './shared.js'
 
 /**
  * PostCompact hook handler.
@@ -14,6 +14,7 @@ import { readStdin, outputDecision } from './shared.js'
  * Also pushes structured learnings to the hub (if any found in the summary).
  */
 export async function handlePostCompactHook(): Promise<void> {
+  if (bailIfNotClaudekeeperLaunched()) return
   const input = await readStdin()
   let hookInput: {
     session_id: string
